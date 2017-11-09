@@ -1,0 +1,45 @@
+#!/bin/bash
+
+playByPlay="http://www.retrosheet.org/events/"
+playByPlay+="$1"
+playByPlay+="eve.zip"
+mkdir playByPlayDL
+cd playByPlayDL
+wget $playByPlay
+playByPlay="$1eve.zip"
+unzip $playByPlay
+rm $playByPlay
+hadoop fs -mkdir PlayBall/PlayByPlay/$1
+hadoop fs -mkdir PlayBall/Roster/$1
+unzipped="$1*"
+hadoop fs -put $unzipped PlayBall/PlayByPlay/$1
+unzipped="*$1.ROS"
+hadoop fs -put $unzipped PlayBall/Roster/$1
+unzipped="TEAM$1"
+hadoop fs -put $unzipped PlayBall/Teams
+rm -f *$1.ROS
+rm -f TEAM$1
+
+
+gamelogs="http://www.retrosheet.org/gamelogs/gl"
+gamelogs+="$1"
+gamelogs+=".zip"
+wget $gamelogs
+gamelogs="gl$1.zip"
+unzip $gamelogs
+rm $gamelogs
+unzipped="GL$1.TXT"
+hadoop fs -put $unzipped PlayBall/GameLogs
+rm -f $unzipped
+
+
+schedule="http://www.retrosheet.org/schedule/"
+schedule+="$1"
+schedule+="SKED.ZIP"
+wget $schedule
+schedule="$1SKED.ZIP"
+unzip $schedule
+rm $schedule
+unzipped="$1SKED.TXT"
+hadoop fs -put $unzipped PlayBall/Schedules
+rm -f $unzipped

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+./downloadScripts/downloadByYear $1
+
+# Creating hbase tables
+echo "create 'teams$1', 'teams_data'" >> hbase.txt
+echo "create 'players$1', 'players_data'" >> hbase.txt
+echo "create 'games$1', 'team_data', 'date_time'" >> hbase.txt
+echo "create 'plays$1', 'game', 'play_num', 'play_data'" >> hbase.txt
+echo "exit" >> hbase.txt
+hbase shell hbase.txt
+rm -f hbase.txt
+
+pig -param roster="PlayBall/Roster/$1" -param team="PlayBall/Teams/TEAM$1" -param year="$1" -f downloadScripts/preprocess.pig
+
+python downloadScripts/splitPlaysByGames.py playByPlayDL
+
+python downloadScripts/playByPlayByGame.py playByPlayDL/first $1
+python downloadScripts/playByPlayByGame.py playByPlayDL/second $1
+python downloadScripts/playByPlayByGame.py playByPlayDL/third $1
+
+rm -rf playByPlayDL
